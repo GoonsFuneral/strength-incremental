@@ -1,0 +1,25 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #121212;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+canvas {
+    background: #1e1e1e;
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+}
