@@ -1,38 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strength Incremental</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strength Incremental</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    header {
+      background-color: #1e1e1e;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 2px solid #ff3c3c;
+    }
+
+    header h1 {
+      margin: 0;
+      color: #ff3c3c;
+      font-size: 2rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #1a1a1a;
+      border-bottom: 1px solid #ff3c3c;
+    }
+
+    nav button {
+      background-color: #1a1a1a;
+      border: none;
+      color: #fff;
+      padding: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    nav button.active, nav button:hover {
+      border-bottom: 3px solid #ff3c3c;
+      color: #ff3c3c;
+    }
+
+    .tab {
+      display: none;
+      padding: 2rem;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    .stat {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .mass-display {
+      font-size: 2rem;
+      color: #ff3c3c;
+      margin: 1rem 0;
+    }
+  </style>
 </head>
 <body>
-    <div id="tabs">
-        <button id="massTabBtn">Mass</button>
-        <button id="statsTabBtn">Stats</button>
-        <button id="settingsTabBtn">Settings</button>
+  <header>
+    <h1>Strength Incremental</h1>
+  </header>
+  <nav>
+    <button class="tablink active" onclick="openTab('mass')">Mass</button>
+    <button class="tablink" onclick="openTab('stats')">Stats</button>
+    <button class="tablink" onclick="openTab('settings')">Settings</button>
+  </nav>
+
+  <main>
+    <div id="mass" class="tab active">
+      <div class="mass-display">Muscle Mass: <span id="muscleMass">0</span> kg</div>
     </div>
 
-    <div id="content">
-        <div id="massTab">
-            <h1>Muscle Mass: <span id="muscleMass">0</span> kg</h1>
-            <p>Increase your muscle mass automatically over time.</p>
-            <button id="rebirthBtn">Rebirth</button>
-            <button id="prestigeBtn">Prestige</button>
-        </div>
-        <div id="statsTab" style="display:none;">
-            <h1>Stats</h1>
-            <p>Strength: <span id="strength">0</span></p>
-            <p>Rebirths: <span id="rebirthCount">0</span></p>
-            <p>Prestige: <span id="prestigeCount">0</span></p>
-            <p>Magic Unlocked: <span id="magicStatus">No</span></p>
-        </div>
-        <div id="settingsTab" style="display:none;">
-            <h1>Settings</h1>
-            <p>Adjust game settings here.</p>
-        </div>
+    <div id="stats" class="tab">
+      <div class="stat">Strength: <span id="strength">0</span></div>
+      <div class="stat">Dexterity: <span id="dexterity">0</span></div>
+      <div class="stat">Mana: <span id="mana">0</span></div>
+      <div class="stat">Rebirths: <span id="rebirths">0</span></div>
+      <div class="stat">Prestige: <span id="prestige">0</span></div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="settings" class="tab">
+      <div class="stat">Settings go here (volume, themes, etc.)</div>
+    </div>
+  </main>
+
+  <script>
+    let muscleMass = 0;
+    let strength = 0;
+    let dexterity = 0;
+    let mana = 0;
+    let rebirths = 0;
+    let prestige = 0;
+
+    // Passive muscle mass increment
+    setInterval(() => {
+      muscleMass += 0.05;
+      strength = Math.floor(muscleMass * 0.8);
+      dexterity = Math.floor(muscleMass * 0.3);
+      if (prestige > 0) mana = Math.floor(muscleMass * 0.1);
+
+      document.getElementById('muscleMass').textContent = muscleMass.toFixed(2);
+      document.getElementById('strength').textContent = strength;
+      document.getElementById('dexterity').textContent = dexterity;
+      document.getElementById('mana').textContent = mana;
+      document.getElementById('rebirths').textContent = rebirths;
+      document.getElementById('prestige').textContent = prestige;
+    }, 100);
+
+    // Tab logic
+    function openTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const tabButtons = document.querySelectorAll('.tablink');
+
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tabButtons.forEach(button => button.classList.remove('active'));
+
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>
