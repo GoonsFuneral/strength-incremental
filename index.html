@@ -65,6 +65,23 @@
       color: #ff3c3c;
       margin: 1rem 0;
     }
+
+    /* Popup styling */
+    .popup {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e1e1e;
+      color: #ff3c3c;
+      border: 1px solid #ff3c3c;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 2s ease-out;
+    }
   </style>
 </head>
 <body>
@@ -104,6 +121,7 @@
     const tickInterval = 100; // ms
 
     // Load saved data
+    let offlineGains = 0;
     if (localStorage.getItem('rawMass')) {
       rawMass = parseFloat(localStorage.getItem('rawMass'));
     }
@@ -111,7 +129,8 @@
       const lastSaveTime = parseInt(localStorage.getItem('lastSaveTime'));
       const timeDiff = Date.now() - lastSaveTime;
       const ticksMissed = timeDiff / tickInterval;
-      rawMass += ticksMissed * massGainRate;
+      offlineGains = ticksMissed * massGainRate;
+      rawMass += offlineGains;
     }
 
     function formatMass(massInGrams) {
@@ -122,6 +141,19 @@
       } else {
         return massInGrams.toFixed(2) + ' g';
       }
+    }
+
+    function showPopup(message) {
+      const popup = document.createElement('div');
+      popup.className = 'popup';
+      popup.textContent = message;
+      document.body.appendChild(popup);
+      setTimeout(() => {
+        popup.style.opacity = 0;
+        setTimeout(() => {
+          document.body.removeChild(popup);
+        }, 2000);
+      }, 3000); // Popup stays visible for 3 seconds before fading
     }
 
     function updateGame() {
@@ -159,6 +191,13 @@
       document.getElementById(tabName).classList.add('active');
       event.target.classList.add('active');
     }
+
+    // After everything loads
+    window.onload = () => {
+      if (offlineGains > 0.5) {
+        showPopup(`While you were away, you gained +${formatMass(offlineGains)} of muscle mass!`);
+      }
+    };
   </script>
 </body>
 </html>
