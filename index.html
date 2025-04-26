@@ -2,14 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Body Strengthening Game</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strength Incremental</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Body Strengthening Game</h1>
-        <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div id="tabs">
+        <button id="massTabBtn">Mass</button>
+        <button id="statsTabBtn">Stats</button>
+        <button id="settingsTabBtn">Settings</button>
     </div>
-    <script src="game.js"></script>
+
+    <div id="content">
+        <div id="massTab">
+            <h1>Muscle Mass: <span id="muscleMass">0</span> kg</h1>
+            <p>Increase your muscle mass automatically over time.</p>
+            <button id="rebirthBtn">Rebirth</button>
+            <button id="prestigeBtn">Prestige</button>
+        </div>
+        <div id="statsTab" style="display:none;">
+            <h1>Stats</h1>
+            <p>Strength: <span id="strength">0</span></p>
+            <p>Rebirths: <span id="rebirthCount">0</span></p>
+            <p>Prestige: <span id="prestigeCount">0</span></p>
+            <p>Magic Unlocked: <span id="magicStatus">No</span></p>
+        </div>
+        <div id="settingsTab" style="display:none;">
+            <h1>Settings</h1>
+            <p>Adjust game settings here.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
