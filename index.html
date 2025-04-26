@@ -1,147 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strength Incremental</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            text-align: center;
-            color: #f44336;
-            margin-top: 30px;
-        }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .tab {
-            margin: 0 15px;
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .tab:hover {
-            background-color: #f44336;
-        }
-        .tab-content {
-            display: none;
-            padding: 20px;
-            text-align: center;
-        }
-        .active-tab {
-            display: block;
-        }
-        .button {
-            background-color: #f44336;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            font-size: 18px;
-        }
-        .button:hover {
-            background-color: #c0392b;
-        }
-        .stat {
-            font-size: 24px;
-            margin: 10px 0;
-        }
-        .stat label {
-            font-weight: bold;
-        }
-        .stat-value {
-            font-size: 36px;
-            color: #f44336;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strength Incremental</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    header {
+      background-color: #1e1e1e;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 2px solid #ff3c3c;
+    }
+
+    header h1 {
+      margin: 0;
+      color: #ff3c3c;
+      font-size: 2rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #1a1a1a;
+      border-bottom: 1px solid #ff3c3c;
+    }
+
+    nav button {
+      background-color: #1a1a1a;
+      border: none;
+      color: #fff;
+      padding: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    nav button.active, nav button:hover {
+      border-bottom: 3px solid #ff3c3c;
+      color: #ff3c3c;
+    }
+
+    .tab {
+      display: none;
+      padding: 2rem;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    .stat {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .mass-display {
+      font-size: 2rem;
+      color: #ff3c3c;
+      margin: 1rem 0;
+    }
+
+    .button {
+      background-color: #ff3c3c;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .button:hover {
+      background-color: #c0392b;
+    }
+  </style>
 </head>
 <body>
+  <header>
     <h1>Strength Incremental</h1>
+  </header>
+  <nav>
+    <button class="tablink active" onclick="openTab('mass')">Mass</button>
+    <button class="tablink" onclick="openTab('stats')">Stats</button>
+    <button class="tablink" onclick="openTab('settings')">Settings</button>
+  </nav>
 
-    <div class="tabs">
-        <div class="tab" id="mass-tab">Mass</div>
-        <div class="tab" id="settings-tab">Settings</div>
-        <div class="tab" id="stats-tab">Stats</div>
+  <main>
+    <div id="mass" class="tab active">
+      <div class="mass-display">Muscle Mass: <span id="muscleMass">0</span> kg</div>
+      <button class="button" onclick="increaseMuscleMass()">Increase Mass</button>
     </div>
 
-    <!-- Mass Tab -->
-    <div id="mass-content" class="tab-content active-tab">
-        <div class="stat">
-            <label>Muscle Mass</label>
-            <div class="stat-value" id="mass-value">0 kg</div>
-        </div>
-        <button class="button" id="increment-mass">Increase Mass</button>
+    <div id="stats" class="tab">
+      <div class="stat">Strength: <span id="strength">0</span></div>
+      <div class="stat">Dexterity: <span id="dexterity">0</span></div>
+      <div class="stat">Mana: <span id="mana">0</span></div>
+      <div class="stat">Rebirths: <span id="rebirths">0</span></div>
+      <div class="stat">Prestige: <span id="prestige">0</span></div>
     </div>
 
-    <!-- Settings Tab -->
-    <div id="settings-content" class="tab-content">
-        <h3>Settings</h3>
-        <p>Adjust the game settings here.</p>
+    <div id="settings" class="tab">
+      <div class="stat">Settings go here (volume, themes, etc.)</div>
     </div>
+  </main>
 
-    <!-- Stats Tab -->
-    <div id="stats-content" class="tab-content">
-        <h3>Stats</h3>
-        <p>Track your stats over time.</p>
-    </div>
+  <script>
+    let muscleMass = 0;
+    let strength = 0;
+    let dexterity = 0;
+    let mana = 0;
+    let rebirths = 0;
+    let prestige = 0;
 
-    <script>
-        // Game Variables
-        let muscleMass = 0;
-        let massIncrement = 0.1; // Initial muscle mass increment per click
+    // Passive muscle mass increment
+    setInterval(() => {
+      muscleMass += 0.05;
+      strength = Math.floor(muscleMass * 0.8);
+      dexterity = Math.floor(muscleMass * 0.3);
+      if (prestige > 0) mana = Math.floor(muscleMass * 0.1);
 
-        // DOM Elements
-        const massValueElem = document.getElementById('mass-value');
-        const incrementMassButton = document.getElementById('increment-mass');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
+      document.getElementById('muscleMass').textContent = muscleMass.toFixed(2);
+      document.getElementById('strength').textContent = strength;
+      document.getElementById('dexterity').textContent = dexterity;
+      document.getElementById('mana').textContent = mana;
+      document.getElementById('rebirths').textContent = rebirths;
+      document.getElementById('prestige').textContent = prestige;
+    }, 100);
 
-        // Tab Switching Logic
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs and content
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active-tab'));
+    // Muscle mass increase on click
+    function increaseMuscleMass() {
+      muscleMass += 0.1; // Increase muscle mass per click
+    }
 
-                // Add active class to clicked tab and corresponding content
-                tab.classList.add('active');
-                document.getElementById(`${tab.id}-content`).classList.add('active-tab');
-            });
-        });
+    // Tab switching logic
+    function openTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const tabButtons = document.querySelectorAll('.tablink');
 
-        // Muscle Mass Increment
-        incrementMassButton.addEventListener('click', () => {
-            muscleMass += massIncrement;
-            massValueElem.textContent = `${muscleMass.toFixed(1)} kg`;
+      tabs.forEach(tab => tab.classList.remove('active'));
+      tabButtons.forEach(button => button.classList.remove('active'));
 
-            // Gradual increment increase
-            if (massIncrement < 1) {
-                massIncrement += 0.05; // Gradually increase the rate
-            }
-        });
-
-        // Simulate Muscle Mass Growth over Time
-        setInterval(() => {
-            muscleMass += massIncrement;
-            massValueElem.textContent = `${muscleMass.toFixed(1)} kg`;
-
-            // Gradually increase muscle mass gain
-            if (massIncrement < 1) {
-                massIncrement += 0.05; // Gradually increase the rate
-            }
-        }, 1000); // Increment mass every second
-    </script>
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>
