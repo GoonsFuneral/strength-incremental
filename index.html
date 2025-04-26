@@ -83,7 +83,7 @@
     </div>
 
     <div id="stats" class="tab">
-      <div class="stat">Strength: <span id="strength">0</span></div>
+      <div class="stat">Strength (Force): <span id="strength">0</span> N</div>
       <div class="stat">Dexterity: <span id="dexterity">0</span></div>
       <div class="stat">Rebirths: <span id="rebirths">0</span></div>
       <div class="stat">Prestige: <span id="prestige">0</span></div>
@@ -96,10 +96,23 @@
 
   <script>
     let rawMass = 0; // in grams
-    let strength = 0;
+    let strengthForce = 0;
     let dexterity = 0;
     let rebirths = 0;
     let prestige = 0;
+    const massGainRate = 0.5; // g per tick
+    const tickInterval = 100; // ms
+
+    // Load saved data
+    if (localStorage.getItem('rawMass')) {
+      rawMass = parseFloat(localStorage.getItem('rawMass'));
+    }
+    if (localStorage.getItem('lastSaveTime')) {
+      const lastSaveTime = parseInt(localStorage.getItem('lastSaveTime'));
+      const timeDiff = Date.now() - lastSaveTime;
+      const ticksMissed = timeDiff / tickInterval;
+      rawMass += ticksMissed * massGainRate;
+    }
 
     function formatMass(massInGrams) {
       if (massInGrams >= 1_000_000) {
@@ -111,17 +124,30 @@
       }
     }
 
-    setInterval(() => {
-      rawMass += 0.5; // gradual gain
-      strength = Math.floor(rawMass * 0.0008); // very gradual scaling
+    function updateGame() {
+      rawMass += massGainRate;
+
+      strengthForce = (rawMass / 1000) * 9.8; // kg to N
       dexterity = Math.floor(rawMass * 0.0003);
 
       document.getElementById('muscleMass').textContent = formatMass(rawMass);
-      document.getElementById('strength').textContent = strength;
+      document.getElementById('strength').textContent = strengthForce.toFixed(2);
       document.getElementById('dexterity').textContent = dexterity;
       document.getElementById('rebirths').textContent = rebirths;
       document.getElementById('prestige').textContent = prestige;
-    }, 100);
+    }
+
+    setInterval(() => {
+      updateGame();
+      saveGame();
+    }, tickInterval);
+
+    function saveGame() {
+      localStorage.setItem('rawMass', rawMass.toString());
+      localStorage.setItem('lastSaveTime', Date.now().toString());
+    }
+
+    window.addEventListener('beforeunload', saveGame);
 
     function openTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
