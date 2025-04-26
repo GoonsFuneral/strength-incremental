@@ -1,134 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Strength Incremental</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: #ffffff;
-    }
-
-    header {
-      background-color: #1e1e1e;
-      padding: 1rem;
-      text-align: center;
-      border-bottom: 2px solid #ff3c3c;
-    }
-
-    header h1 {
-      margin: 0;
-      color: #ff3c3c;
-      font-size: 2rem;
-    }
-
-    nav {
-      display: flex;
-      justify-content: center;
-      background-color: #1a1a1a;
-      border-bottom: 1px solid #ff3c3c;
-    }
-
-    nav button {
-      background-color: #1a1a1a;
-      border: none;
-      color: #fff;
-      padding: 1rem;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    nav button.active, nav button:hover {
-      border-bottom: 3px solid #ff3c3c;
-      color: #ff3c3c;
-    }
-
-    .tab {
-      display: none;
-      padding: 2rem;
-    }
-
-    .tab.active {
-      display: block;
-    }
-
-    .stat {
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
-    .mass-display {
-      font-size: 2rem;
-      color: #ff3c3c;
-      margin: 1rem 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strength Incremental</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: red;
+        }
+        .game-container {
+            padding: 20px;
+        }
+        .stats {
+            margin-top: 20px;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .button:disabled {
+            background-color: #666;
+        }
+    </style>
 </head>
 <body>
-  <header>
     <h1>Strength Incremental</h1>
-  </header>
-  <nav>
-    <button class="tablink active" onclick="openTab('mass')">Mass</button>
-    <button class="tablink" onclick="openTab('stats')">Stats</button>
-    <button class="tablink" onclick="openTab('settings')">Settings</button>
-  </nav>
+    <div class="game-container">
+        <div id="mass">Muscle Mass: 0 kg</div>
+        <div id="force">Estimated Strength (Force): 0 N</div>
+        <div id="level">Level: 1</div>
+        <div id="xp">XP: 0</div>
+        <div id="rebirth">Rebirths: 0</div>
 
-  <main>
-    <div id="mass" class="tab active">
-      <div class="mass-display">Muscle Mass: <span id="muscleMass">0</span> kg</div>
+        <button class="button" id="rebirthButton" onclick="rebirth()">Rebirth</button>
     </div>
 
-    <div id="stats" class="tab">
-      <div class="stat">Strength: <span id="strength">0</span></div>
-      <div class="stat">Dexterity: <span id="dexterity">0</span></div>
-      <div class="stat">Mana: <span id="mana">0</span></div>
-      <div class="stat">Rebirths: <span id="rebirths">0</span></div>
-      <div class="stat">Prestige: <span id="prestige">0</span></div>
-    </div>
+    <script>
+        // Game variables
+        let muscleMass = parseFloat(localStorage.getItem('muscleMass')) || 0;
+        let xp = parseInt(localStorage.getItem('xp')) || 0;
+        let level = parseInt(localStorage.getItem('level')) || 1;
+        let rebirths = parseInt(localStorage.getItem('rebirths')) || 0;
 
-    <div id="settings" class="tab">
-      <div class="stat">Settings go here (volume, themes, etc.)</div>
-    </div>
-  </main>
+        // Muscle mass growth parameters
+        let baseGrowthRate = 0.001; // Initial slow growth
+        let growthMultiplier = 1.05; // Gradual increase over time
+        let forceMultiplier = 100; // 1 kg muscle ≈ 100 N of force
 
-  <script>
-    let muscleMass = 0;
-    let strength = 0;
-    let dexterity = 0;
-    let mana = 0;
-    let rebirths = 0;
-    let prestige = 0;
+        // Update stats in localStorage periodically
+        setInterval(() => {
+            muscleMass += baseGrowthRate;
+            xp += 1; // Increment XP over time
 
-    // Passive muscle mass increment
-    setInterval(() => {
-      muscleMass += 0.05;
-      strength = Math.floor(muscleMass * 0.8);
-      dexterity = Math.floor(muscleMass * 0.3);
-      if (prestige > 0) mana = Math.floor(muscleMass * 0.1);
+            // Gradual increase in growth rate (muscle mass grows faster)
+            baseGrowthRate *= growthMultiplier;
 
-      document.getElementById('muscleMass').textContent = muscleMass.toFixed(2);
-      document.getElementById('strength').textContent = strength;
-      document.getElementById('dexterity').textContent = dexterity;
-      document.getElementById('mana').textContent = mana;
-      document.getElementById('rebirths').textContent = rebirths;
-      document.getElementById('prestige').textContent = prestige;
-    }, 100);
+            // Save to localStorage
+            localStorage.setItem('muscleMass', muscleMass.toFixed(3));
+            localStorage.setItem('xp', xp);
+            localStorage.setItem('level', level);
+            localStorage.setItem('rebirths', rebirths);
 
-    // Tab logic
-    function openTab(tabName) {
-      const tabs = document.querySelectorAll('.tab');
-      const tabButtons = document.querySelectorAll('.tablink');
+            // Update display
+            document.getElementById('mass').textContent = `Muscle Mass: ${muscleMass.toFixed(3)} kg`;
+            document.getElementById('force').textContent = `Estimated Strength (Force): ${(muscleMass * forceMultiplier).toFixed(2)} N`;
+            document.getElementById('xp').textContent = `XP: ${xp}`;
+            document.getElementById('level').textContent = `Level: ${level}`;
+            document.getElementById('rebirth').textContent = `Rebirths: ${rebirths}`;
 
-      tabs.forEach(tab => tab.classList.remove('active'));
-      tabButtons.forEach(button => button.classList.remove('active'));
+            // Level up logic
+            if (xp >= level * 50) {
+                levelUp();
+            }
+        }, 1000); // Update every second
 
-      document.getElementById(tabName).classList.add('active');
-      event.target.classList.add('active');
-    }
-  </script>
+        // Level up logic
+        function levelUp() {
+            level++;
+            xp = 0; // Reset XP after leveling up
+            baseGrowthRate += 0.01; // Increase muscle mass gain after leveling up
+            localStorage.setItem('level', level);
+
+            // Check if player is ready for rebirth
+            if (level >= 10) {
+                document.getElementById('rebirthButton').disabled = false; // Enable rebirth button
+            }
+        }
+
+        // Rebirth function
+        function rebirth() {
+            if (level >= 10) {
+                rebirths++;
+                muscleMass = 0; // Reset muscle mass after rebirth
+                xp = 0;
+                level = 1;
+                baseGrowthRate = 0.001; // Reset growth rate
+                localStorage.setItem('muscleMass', muscleMass);
+                localStorage.setItem('xp', xp);
+                localStorage.setItem('level', level);
+                localStorage.setItem('rebirths', rebirths);
+                document.getElementById('rebirthButton').disabled = true; // Disable rebirth button until next rebirth
+            }
+        }
+    </script>
 </body>
 </html>
