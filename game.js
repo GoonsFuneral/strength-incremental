@@ -10,7 +10,7 @@ let prestigeThreshold = 10; // Rebirths required for prestige
 // Update stats UI
 function updateStats() {
     document.getElementById("muscleMass").textContent = muscleMass.toFixed(2);
-    document.getElementById("strength").textContent = Math.sqrt(muscleMass).toFixed(2);
+    document.getElementById("strength").textContent = Math.sqrt(muscleMass).toFixed(2); // Strength based on muscle mass
     document.getElementById("rebirthCount").textContent = rebirthCount;
     document.getElementById("prestigeCount").textContent = prestigeCount;
     document.getElementById("magicStatus").textContent = magicUnlocked ? "Yes" : "No";
@@ -70,4 +70,5 @@ document.getElementById("settingsTabBtn").addEventListener("click", () => switch
 // Start gaining muscle mass automatically
 setInterval(gainMuscleMass, 1000); // Gain muscle mass every second
 
+// Initial stats update
 updateStats();
