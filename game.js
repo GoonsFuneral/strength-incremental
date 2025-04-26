@@ -1,79 +1,73 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+let muscleMass = 0;
+let strength = 0;
+let rebirthCount = 0;
+let prestigeCount = 0;
+let magicUnlocked = false;
+let massPerSecond = 0.1; // Starting muscle mass gain per second
+let rebirthThreshold = 1000; // Muscle mass required for rebirth
+let prestigeThreshold = 10; // Rebirths required for prestige
 
-let player = {
-  strength: 0,
-  dexterity: 0,
-  mana: 0,
-  energy: 100,
-  energyCap: 100,
-  xp: 0,
-  level: 1,
-  trainingCost: 10,
-  magicUnlocked: false
-};
-
-function drawText(text, x, y) {
-  ctx.fillStyle = "white";
-  ctx.font = "16px Arial";
-  ctx.fillText(text, x, y);
+// Update stats UI
+function updateStats() {
+    document.getElementById("muscleMass").textContent = muscleMass.toFixed(2);
+    document.getElementById("strength").textContent = Math.sqrt(muscleMass).toFixed(2);
+    document.getElementById("rebirthCount").textContent = rebirthCount;
+    document.getElementById("prestigeCount").textContent = prestigeCount;
+    document.getElementById("magicStatus").textContent = magicUnlocked ? "Yes" : "No";
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawText(`Strength: ${player.strength}`, 20, 30);
-  drawText(`Dexterity: ${player.dexterity}`, 20, 60);
-  drawText(`Mana: ${player.mana}`, 20, 90);
-  drawText(`Energy: ${player.energy}/${player.energyCap}`, 20, 120);
-  drawText(`XP: ${player.xp}`, 20, 150);
-  drawText(`Level: ${player.level}`, 20, 180);
-  drawText(`Magic Unlocked: ${player.magicUnlocked ? 'Yes' : 'No'}`, 20, 210);
+// Increase muscle mass over time
+function gainMuscleMass() {
+    muscleMass += massPerSecond;
+    updateStats();
 }
 
-function gameLoop() {
-  draw();
-  requestAnimationFrame(gameLoop);
+// Rebirth function
+function rebirth() {
+    if (muscleMass >= rebirthThreshold) {
+        muscleMass = 0;
+        rebirthCount++;
+        massPerSecond *= 1.5; // Increase mass gain rate
+        updateStats();
+    } else {
+        alert("Not enough muscle mass to rebirth!");
+    }
 }
 
-window.addEventListener("keydown", (e) => {
-  const cost = player.trainingCost;
+// Prestige function
+function prestige() {
+    if (rebirthCount >= prestigeThreshold) {
+        prestigeCount++;
+        massPerSecond *= 2; // Double mass gain rate on prestige
+        updateStats();
+    } else {
+        alert("Not enough rebirths to prestige!");
+    }
+}
 
-  if (e.key === "1" && player.energy >= cost) {
-    player.strength++;
-    player.xp += 10;
-    player.energy -= cost;
-  }
+// Unlock magic after certain rebirths
+function unlockMagic() {
+    if (rebirthCount >= 50) { // Example threshold for unlocking magic
+        magicUnlocked = true;
+        updateStats();
+    }
+}
 
-  if (e.key === "2" && player.level >= 10 && player.energy >= cost + 5) {
-    player.strength += 3;
-    player.dexterity += 1;
-    player.xp += 15;
-    player.energy -= (cost + 5);
-  }
+// Switch between tabs
+function switchTab(tab) {
+    const tabs = ["massTab", "statsTab", "settingsTab"];
+    tabs.forEach(t => document.getElementById(t).style.display = "none");
+    document.getElementById(tab).style.display = "block";
+}
 
-  if (e.key === "3" && player.level >= 30 && player.energy >= cost + 10) {
-    player.strength += 5;
-    player.dexterity += 2;
-    player.xp += 25;
-    player.energy -= (cost + 10);
-  }
+// Event Listeners
+document.getElementById("rebirthBtn").addEventListener("click", rebirth);
+document.getElementById("prestigeBtn").addEventListener("click", prestige);
+document.getElementById("massTabBtn").addEventListener("click", () => switchTab("massTab"));
+document.getElementById("statsTabBtn").addEventListener("click", () => switchTab("statsTab"));
+document.getElementById("settingsTabBtn").addEventListener("click", () => switchTab("settingsTab"));
 
-  if (e.key === "4" && player.level >= 100 && !player.magicUnlocked) {
-    player.mana += 10;
-    player.magicUnlocked = true;
-  }
+// Start gaining muscle mass automatically
+setInterval(gainMuscleMass, 1000); // Gain muscle mass every second
 
-  while (player.xp >= 50 * player.level) {
-    player.xp -= 50 * player.level;
-    player.level++;
-    player.energyCap += 20;
-    player.trainingCost += 5;
-  }
-});
-
-setInterval(() => {
-  player.energy = Math.min(player.energy + player.level, player.energyCap);
-}, 1000);
-
-gameLoop();
+updateStats();
