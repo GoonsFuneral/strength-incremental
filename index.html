@@ -66,21 +66,12 @@
       margin: 1rem 0;
     }
 
-    #rankUpButton {
-      margin-top: 1rem;
-      padding: 1rem;
-      background-color: #ff3c3c;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
+    #rank-up-message {
       display: none;
-    }
-
-    #message {
-      margin-top: 1rem;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 1.5rem;
       color: #ff3c3c;
-      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -97,18 +88,15 @@
   <main>
     <div id="mass" class="tab active">
       <div class="mass-display">Muscle Mass: <span id="muscleMass">0</span></div>
-      <div class="stat">Current Rank: <span id="rank">0</span></div>
-      <div class="stat">Rank Boost: <span id="rankBoost">0%</span></div>
-      <button id="rankUpButton" onclick="rankUp()">Rank Up!</button>
-      <div id="message"></div>
+      <div class="mass-display">Current Unit: <span id="massUnit">g</span></div>
+      <button onclick="rankUp()">Rank Up (Cost: <span id="rankCost">1000</span> g)</button>
+      <div id="rank-up-message">Rank Up!</div>
     </div>
 
     <div id="stats" class="tab">
-      <div class="stat">Strength (Force in Newtons): <span id="strength">0</span> N</div>
+      <div class="stat">Strength (Force): <span id="strength">0</span> N</div>
       <div class="stat">Dexterity: <span id="dexterity">0</span></div>
-      <div class="stat">Mana: <span id="mana">???</span></div>
-      <div class="stat">Rebirths: <span id="rebirths">0</span></div>
-      <div class="stat">Prestige: <span id="prestige">0</span></div>
+      <div class="stat">Rank: <span id="rank">0</span></div>
     </div>
 
     <div id="settings" class="tab">
@@ -118,44 +106,30 @@
 
   <script>
     let muscleMass = 0;
-    let rank = 0;
-    let rebirths = 0;
-    let prestige = 0;
-
     let strength = 0;
     let dexterity = 0;
+    let rank = 0;
+    let rankCost = 1000; // Start at 1000g
 
-    const saveKey = 'strength-incremental-save';
-
-    function formatMass(mass) {
-      if (mass < 1) return (mass * 1000).toFixed(2) + ' g';
-      if (mass < 1000) return mass.toFixed(2) + ' kg';
-      if (mass < 1000000) return (mass / 1000).toFixed(2) + ' tonnes';
-      return (mass / 1000000).toFixed(2) + ' kilotonnes';
+    // Load Save Data
+    window.onload = function() {
+      if (localStorage.getItem('muscleMass')) muscleMass = parseFloat(localStorage.getItem('muscleMass'));
+      if (localStorage.getItem('rank')) rank = parseInt(localStorage.getItem('rank'));
+      if (localStorage.getItem('rankCost')) rankCost = parseFloat(localStorage.getItem('rankCost'));
     }
 
-    function updateDisplay() {
-      document.getElementById('muscleMass').textContent = formatMass(muscleMass);
-      document.getElementById('rank').textContent = rank;
-      document.getElementById('rankBoost').textContent = (rank * 25) + '%';
-      document.getElementById('strength').textContent = (muscleMass * 9.81).toFixed(2);
-      document.getElementById('dexterity').textContent = Math.floor(muscleMass * 0.3);
-      document.getElementById('rebirths').textContent = rebirths;
-      document.getElementById('prestige').textContent = prestige;
+    // Passive muscle mass increment
+    setInterval(() => {
+      muscleMass += 0.05 * (1 + rank * 0.5);
 
-      document.getElementById('rankUpButton').style.display = muscleMass >= 1 ? 'inline-block' : 'none';
-    }
+      strength = (muscleMass / 1000) * 9.81;
+      dexterity = (muscleMass / 1000) * 0.3;
 
-    function rankUp() {
-      if (muscleMass >= 1) {
-        rank++;
-        muscleMass = 0;
-        document.getElementById('message').textContent = "🏅 Rank Up! Power Surges Through You!";
-        setTimeout(() => { document.getElementById('message').textContent = ''; }, 3000);
-        saveGame();
-      }
-    }
+      updateDisplay();
+      saveGame();
+    }, 100);
 
+    // Tab logic
     function openTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
       const tabButtons = document.querySelectorAll('.tablink');
@@ -167,36 +141,51 @@
       event.target.classList.add('active');
     }
 
-    function saveGame() {
-      const saveData = {
-        muscleMass,
-        rank,
-        rebirths,
-        prestige,
-        lastSave: Date.now()
-      };
-      localStorage.setItem(saveKey, JSON.stringify(saveData));
+    function updateDisplay() {
+      let unit = 'g';
+      let displayMass = muscleMass;
+
+      if (muscleMass >= 1000000) {
+        displayMass = (muscleMass / 1000000).toFixed(2);
+        unit = 'tonnes';
+      } else if (muscleMass >= 1000) {
+        displayMass = (muscleMass / 1000).toFixed(2);
+        unit = 'kg';
+      } else {
+        displayMass = muscleMass.toFixed(2);
+      }
+
+      document.getElementById('muscleMass').textContent = displayMass;
+      document.getElementById('massUnit').textContent = unit;
+      document.getElementById('strength').textContent = strength.toFixed(2);
+      document.getElementById('dexterity').textContent = dexterity.toFixed(2);
+      document.getElementById('rank').textContent = rank;
+      document.getElementById('rankCost').textContent = rankCost.toFixed(0);
     }
 
-    function loadGame() {
-      const saveData = JSON.parse(localStorage.getItem(saveKey));
-      if (saveData) {
-        const timePassed = (Date.now() - saveData.lastSave) / 1000;
-        muscleMass = saveData.muscleMass + (timePassed * 0.05 * (1 + rank * 0.25));
-        rank = saveData.rank;
-        rebirths = saveData.rebirths;
-        prestige = saveData.prestige;
+    function rankUp() {
+      if (muscleMass >= rankCost) {
+        muscleMass = 0;
+        rank++;
+        rankCost *= 2;
+        showRankUpMessage();
+        saveGame();
       }
     }
 
-    loadGame();
+    function showRankUpMessage() {
+      const msg = document.getElementById('rank-up-message');
+      msg.style.display = 'block';
+      setTimeout(() => {
+        msg.style.display = 'none';
+      }, 3000);
+    }
 
-    setInterval(() => {
-      muscleMass += 0.05 * (1 + rank * 0.25);
-      updateDisplay();
-    }, 100);
-
-    setInterval(saveGame, 10000); // Auto-save every 10 seconds
+    function saveGame() {
+      localStorage.setItem('muscleMass', muscleMass);
+      localStorage.setItem('rank', rank);
+      localStorage.setItem('rankCost', rankCost);
+    }
   </script>
 </body>
 </html>
