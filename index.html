@@ -55,23 +55,23 @@
       display: block;
     }
 
-    .stat {
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
     .mass-display {
       font-size: 2rem;
       color: #ff3c3c;
       margin: 1rem 0;
     }
 
-    #rank-up-message {
+    .rank-upgrade {
+      margin: 1rem 0;
+    }
+
+    #rankMessage {
+      color: #ff3c3c;
+      font-size: 1.5rem;
+      font-weight: bold;
       display: none;
       text-align: center;
-      margin-top: 10px;
-      font-size: 1.5rem;
-      color: #ff3c3c;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -79,6 +79,7 @@
   <header>
     <h1>Strength Incremental</h1>
   </header>
+
   <nav>
     <button class="tablink active" onclick="openTab('mass')">Mass</button>
     <button class="tablink" onclick="openTab('stats')">Stats</button>
@@ -87,49 +88,74 @@
 
   <main>
     <div id="mass" class="tab active">
-      <div class="mass-display">Muscle Mass: <span id="muscleMass">0</span></div>
-      <div class="mass-display">Current Unit: <span id="massUnit">g</span></div>
-      <button onclick="rankUp()">Rank Up (Cost: <span id="rankCost">1000</span> g)</button>
-      <div id="rank-up-message">Rank Up!</div>
+      <div class="mass-display">Muscle Mass: <span id="muscleMass">0 g</span></div>
+      <button id="rankUpBtn" class="rank-upgrade" onclick="rankUp()">Rank Up (Cost: 1 kg)</button>
+      <div id="rankMessage">Rank Up!</div>
     </div>
 
     <div id="stats" class="tab">
-      <div class="stat">Strength (Force): <span id="strength">0</span> N</div>
-      <div class="stat">Dexterity: <span id="dexterity">0</span></div>
-      <div class="stat">Rank: <span id="rank">0</span></div>
+      <div>Strength (force): <span id="strengthForce">0 N</span></div>
+      <div>Ranks: <span id="ranks">0</span></div>
     </div>
 
     <div id="settings" class="tab">
-      <div class="stat">Settings go here (volume, themes, etc.)</div>
+      <div>Settings will go here.</div>
     </div>
   </main>
 
   <script>
-    let muscleMass = 0;
-    let strength = 0;
-    let dexterity = 0;
-    let rank = 0;
-    let rankCost = 1000; // Start at 1000g
+    let muscleMass = 0; // in grams
+    let ranks = 0;
+    let rankCost = 1000; // 1000g = 1kg
+    let massGainRate = 0.05; // grams per tick
+    let lastUpdate = Date.now();
 
-    // Load Save Data
-    window.onload = function() {
-      if (localStorage.getItem('muscleMass')) muscleMass = parseFloat(localStorage.getItem('muscleMass'));
-      if (localStorage.getItem('rank')) rank = parseInt(localStorage.getItem('rank'));
-      if (localStorage.getItem('rankCost')) rankCost = parseFloat(localStorage.getItem('rankCost'));
+    // Save and load
+    function saveGame() {
+      localStorage.setItem('muscleMass', muscleMass);
+      localStorage.setItem('ranks', ranks);
+      localStorage.setItem('rankCost', rankCost);
     }
 
-    // Passive muscle mass increment
-    setInterval(() => {
-      muscleMass += 0.05 * (1 + rank * 0.5);
+    function loadGame() {
+      if (localStorage.getItem('muscleMass')) {
+        muscleMass = parseFloat(localStorage.getItem('muscleMass'));
+        ranks = parseInt(localStorage.getItem('ranks'));
+        rankCost = parseInt(localStorage.getItem('rankCost'));
+      }
+    }
 
-      strength = (muscleMass / 1000) * 9.81;
-      dexterity = (muscleMass / 1000) * 0.3;
+    function formatMass(mass) {
+      if (mass >= 1e9) return (mass / 1e9).toFixed(2) + ' tonnes';
+      if (mass >= 1e6) return (mass / 1e6).toFixed(2) + ' kg';
+      if (mass >= 1000) return (mass / 1000).toFixed(2) + ' kg';
+      return mass.toFixed(2) + ' g';
+    }
 
-      updateDisplay();
-      saveGame();
-    }, 100);
+    function calculateStrengthForce(massGrams) {
+      // Strength force = mass (kg) * 9.8 (gravity)
+      let massKg = massGrams / 1000;
+      return (massKg * 9.8).toFixed(2);
+    }
 
-    // Tab logic
+    function rankUp() {
+      if (muscleMass >= rankCost) {
+        muscleMass = 0;
+        ranks += 1;
+        rankCost *= 2;
+        showRankMessage();
+        saveGame();
+      }
+    }
+
+    function showRankMessage() {
+      const msg = document.getElementById('rankMessage');
+      msg.style.display = 'block';
+      setTimeout(() => {
+        msg.style.display = 'none';
+      }, 2000);
+    }
+
     function openTab(tabName) {
       const tabs = document.querySelectorAll('.tab');
       const tabButtons = document.querySelectorAll('.tablink');
@@ -141,51 +167,23 @@
       event.target.classList.add('active');
     }
 
-    function updateDisplay() {
-      let unit = 'g';
-      let displayMass = muscleMass;
-
-      if (muscleMass >= 1000000) {
-        displayMass = (muscleMass / 1000000).toFixed(2);
-        unit = 'tonnes';
-      } else if (muscleMass >= 1000) {
-        displayMass = (muscleMass / 1000).toFixed(2);
-        unit = 'kg';
-      } else {
-        displayMass = muscleMass.toFixed(2);
-      }
-
-      document.getElementById('muscleMass').textContent = displayMass;
-      document.getElementById('massUnit').textContent = unit;
-      document.getElementById('strength').textContent = strength.toFixed(2);
-      document.getElementById('dexterity').textContent = dexterity.toFixed(2);
-      document.getElementById('rank').textContent = rank;
-      document.getElementById('rankCost').textContent = rankCost.toFixed(0);
+    function updateGame(diff) {
+      muscleMass += massGainRate * (diff / 100);
+      document.getElementById('muscleMass').textContent = formatMass(muscleMass);
+      document.getElementById('strengthForce').textContent = calculateStrengthForce(muscleMass);
+      document.getElementById('ranks').textContent = ranks;
+      document.getElementById('rankUpBtn').textContent = `Rank Up (Cost: ${formatMass(rankCost)})`;
     }
 
-    function rankUp() {
-      if (muscleMass >= rankCost) {
-        muscleMass = 0;
-        rank++;
-        rankCost *= 2;
-        showRankUpMessage();
-        saveGame();
-      }
-    }
-
-    function showRankUpMessage() {
-      const msg = document.getElementById('rank-up-message');
-      msg.style.display = 'block';
-      setTimeout(() => {
-        msg.style.display = 'none';
-      }, 3000);
-    }
-
-    function saveGame() {
-      localStorage.setItem('muscleMass', muscleMass);
-      localStorage.setItem('rank', rank);
-      localStorage.setItem('rankCost', rankCost);
-    }
+    // Game loop
+    loadGame();
+    setInterval(() => {
+      const now = Date.now();
+      const diff = now - lastUpdate;
+      updateGame(diff);
+      lastUpdate = now;
+      saveGame();
+    }, 100);
   </script>
 </body>
 </html>
